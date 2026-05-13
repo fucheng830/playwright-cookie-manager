@@ -17,7 +17,8 @@ class CookieManager:
                 self.backend = FileBackend(conn)
             elif backend == "sql":
                 from .backends.sql import SQLBackend
-                self.backend = SQLBackend(conn, **kwargs)
+                table = kwargs.pop("table", "platform_accounts")
+                self.backend = SQLBackend(conn, table_name=table, **kwargs)
             elif backend == "redis":
                 from .backends.cloud import RedisBackend
                 self.backend = RedisBackend(conn, **kwargs)

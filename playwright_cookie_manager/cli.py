@@ -15,23 +15,27 @@ def main():
     p_save.add_argument("--data", "-d", help="JSON string of cookie data")
     p_save.add_argument("--nickname", default="")
     p_save.add_argument("--path", default="data/cookies", help="Storage path")
+    p_save.add_argument("--db", help="Database URL (e.g. postgresql://user:pass@host/db)")
 
     # Load
     p_load = sub.add_parser("load", help="Load cookies")
     p_load.add_argument("platform")
     p_load.add_argument("account_id")
     p_load.add_argument("--path", default="data/cookies")
+    p_load.add_argument("--db", help="Database URL (e.g. postgresql://user:pass@host/db)")
 
     # List
     p_list = sub.add_parser("list", help="List accounts")
     p_list.add_argument("platform", nargs="?", default=None)
     p_list.add_argument("--path", default="data/cookies")
+    p_list.add_argument("--db", help="Database URL (e.g. postgresql://user:pass@host/db)")
 
     # Delete
     p_del = sub.add_parser("delete", help="Delete account")
     p_del.add_argument("platform")
     p_del.add_argument("account_id")
     p_del.add_argument("--path", default="data/cookies")
+    p_del.add_argument("--db", help="Database URL (e.g. postgresql://user:pass@host/db)")
 
     # Login
     p_login = sub.add_parser("login", help="Login to platform")
@@ -39,12 +43,14 @@ def main():
     p_login.add_argument("account_id", nargs="?", default="default")
     p_login.add_argument("--headless", action="store_true")
     p_login.add_argument("--path", default="data/cookies")
+    p_login.add_argument("--db", help="Database URL (e.g. postgresql://user:pass@host/db)")
 
     # Export
     p_export = sub.add_parser("export", help="Export cookies as JSON")
     p_export.add_argument("platform")
     p_export.add_argument("account_id")
     p_export.add_argument("--path", default="data/cookies")
+    p_export.add_argument("--db", help="Database URL (e.g. postgresql://user:pass@host/db)")
 
     args = parser.parse_args()
 
@@ -52,7 +58,11 @@ def main():
         parser.print_help()
         return
 
-    mgr = CookieManager(getattr(args, "path", "data/cookies"))
+    db_url = getattr(args, "db", None)
+    if db_url:
+        mgr = CookieManager(db_url, backend="sql")
+    else:
+        mgr = CookieManager(getattr(args, "path", "data/cookies"))
 
     if args.cmd == "save":
         if args.file:
