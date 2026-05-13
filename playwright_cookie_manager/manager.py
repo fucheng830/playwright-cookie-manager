@@ -91,9 +91,16 @@ class CookieManager:
                 acc = self.backend.load(platform, aid)
                 result.append({"platform": platform, "account_id": aid, "nickname": acc.nickname if acc else ""})
             return result
-        # List all platforms
-        import os
+        # List all platforms across all backends
         result = []
+        # Prefer backend-native list_platforms() if available
+        list_platforms_fn = getattr(self.backend, 'list_platforms', None)
+        if list_platforms_fn:
+            for plat in list_platforms_fn():
+                result.extend(self.list(plat))
+            return result
+        # Fallback for backends without list_platforms (legacy)
+        import os
         base = getattr(self.backend, 'base_path', None)
         if base and os.path.isdir(base):
             for plat in os.listdir(base):

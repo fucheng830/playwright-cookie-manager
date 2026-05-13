@@ -34,6 +34,13 @@ class FileBackend:
             return []
         return [f[:-5] for f in os.listdir(d) if f.endswith(".json")]
 
+    def list_platforms(self) -> list[str]:
+        """List all platforms that have stored cookies."""
+        if not os.path.isdir(self.base_path):
+            return []
+        return [d for d in os.listdir(self.base_path)
+                if os.path.isdir(os.path.join(self.base_path, d))]
+
     def delete(self, platform: str, account_id: str) -> None:
         p = self._path(platform, account_id)
         if os.path.exists(p):

@@ -75,6 +75,15 @@ class SQLBackend:
             ).fetchall()
         return [r[0] for r in rows]
 
+    def list_platforms(self) -> list[str]:
+        """List all platforms that have stored cookies."""
+        from sqlalchemy import text
+        with self._get_conn() as conn:
+            rows = conn.execute(
+                text(f"SELECT DISTINCT platform FROM {self.table_name} WHERE cookie_data IS NOT NULL AND status = 1")
+            ).fetchall()
+        return [r[0] for r in rows]
+
     def delete(self, platform: str, account_id: str) -> None:
         from sqlalchemy import text
         with self._get_conn() as conn:
