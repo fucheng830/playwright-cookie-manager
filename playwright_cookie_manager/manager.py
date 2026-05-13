@@ -1,5 +1,5 @@
 """CookieManager — main API."""
-import json, logging
+import json, logging, os
 from datetime import datetime
 from typing import Optional
 from .types import CookieData, CookieAccount
@@ -7,17 +7,36 @@ from .backends.file import FileBackend
 
 logger = logging.getLogger(__name__)
 
+# Environment variable names
+ENV_BACKEND = "COOKIE_BACKEND"       # "file" or "sql"
+ENV_DB_URL = "COOKIE_DB_URL"        # Database URL for sql backend
+ENV_STORAGE_PATH = "COOKIE_PATH"    # File storage path (default: data/cookies)
+ENV_DB_TABLE = "COOKIE_DB_TABLE"    # Table name (default: platform_accounts)
+
 
 class CookieManager:
     """Universal cookie manager with pluggable backends."""
 
-    def __init__(self, conn: str = "data/cookies", backend: str | object = "file", **kwargs):
+    def __init__(self, conn: str = "", backend: str | object = "", **kwargs):
+        # Resolve backend from env if not specified
+        if not backend or backend == "":
+            backend = os.environ.get(ENV_BACKEND, "file")
+
+        # Resolve connection string from env if not specified
+        if not conn or conn == "":
+            if backend == "sql":
+                conn = os.environ.get(ENV_DB_URL, "")
+                if not conn:
+                    raise ValueError(f"SQL backend requires {ENV_DB_URL} env var or connection string")
+            else:
+                conn = os.environ.get(ENV_STORAGE_PATH, "data/cookies")
+
         if isinstance(backend, str):
             if backend == "file":
                 self.backend = FileBackend(conn)
             elif backend == "sql":
                 from .backends.sql import SQLBackend
-                table = kwargs.pop("table", "platform_accounts")
+                table = kwargs.pop("table", os.environ.get(ENV_DB_TABLE, "platform_accounts"))
                 self.backend = SQLBackend(conn, table_name=table, **kwargs)
             elif backend == "redis":
                 from .backends.cloud import RedisBackend
@@ -26,6 +45,20 @@ class CookieManager:
                 raise ValueError(f"Unknown backend: {backend}")
         else:
             self.backend = backend
+
+    @classmethod
+    def from_env(cls):
+        """Create CookieManager from environment variables."""
+        return cls()
+
+    def config_info(self) -> dict:
+        """Return current configuration info."""
+        backend_type = type(self.backend).__name__
+        if backend_type == "FileBackend":
+            return {"backend": "file", "path": self.backend.base_path}
+        elif backend_type == "SQLBackend":
+            return {"backend": "sql", "url": self.backend.database_url, "table": self.backend.table_name}
+        return {"backend": backend_type}
 
     def save(self, platform: str, account_id: str, cookie_data: dict | str,
              nickname: str = "", avatar_url: str = "", metadata: dict | None = None) -> CookieAccount:

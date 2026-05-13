@@ -52,6 +52,16 @@ def main():
     p_export.add_argument("--path", default="data/cookies")
     p_export.add_argument("--db", help="Database URL (e.g. postgresql://user:pass@host/db)")
 
+    # Config
+    p_config = sub.add_parser("config", help="Show current configuration")
+
+    # Validate
+    p_val = sub.add_parser("validate", help="Check if cookies are still valid")
+    p_val.add_argument("platform")
+    p_val.add_argument("account_id")
+    p_val.add_argument("--db", help="Database URL")
+    p_val.add_argument("--path", default="data/cookies")
+
     args = parser.parse_args()
 
     if not args.cmd:
@@ -62,9 +72,26 @@ def main():
     if db_url:
         mgr = CookieManager(db_url, backend="sql")
     else:
-        mgr = CookieManager(getattr(args, "path", "data/cookies"))
+        mgr = CookieManager()  # reads from env
 
-    if args.cmd == "save":
+    if args.cmd == "config":
+        info = mgr.config_info()
+        print(f"Backend: {info['backend']}")
+        if info['backend'] == 'sql':
+            print(f"Database: {info['url']}")
+            print(f"Table:    {info['table']}")
+        else:
+            print(f"Path:     {info['path']}")
+
+    elif args.cmd == "validate":
+        valid = mgr.validate(args.platform, args.account_id)
+        if valid:
+            print(f"Valid: {args.platform}/{args.account_id}")
+        else:
+            print(f"Invalid or not found: {args.platform}/{args.account_id}", file=sys.stderr)
+            sys.exit(1)
+
+    elif args.cmd == "save":
         if args.file:
             with open(args.file) as f:
                 data = json.load(f)

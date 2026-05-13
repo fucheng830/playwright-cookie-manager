@@ -72,6 +72,27 @@ Available MCP tools: `save_cookie`, `load_cookie`, `list_cookies`, `delete_cooki
 Built-in login URLs and auth token detectors for:
 x, xhs (Xiaohongshu), douyin, kuaishou, bilibili, wechat
 
+## Configuration via Environment Variables
+
+```bash
+# Database mode (wanxiang / any PostgreSQL)
+export COOKIE_BACKEND=sql
+export COOKIE_DB_URL=postgresql://postgresuser:postgrespass@192.168.0.17:5432/wanxiang
+export COOKIE_DB_TABLE=platform_accounts
+
+# File mode (default)
+export COOKIE_BACKEND=file
+export COOKIE_PATH=data/cookies
+```
+
+After setting env vars, all commands auto-detect configuration:
+
+```bash
+cookie-manager config    # Show current config
+cookie-manager list      # Auto-uses DB or file based on env
+cookie-manager login xhs # Auto-saves to configured backend
+```
+
 ## Backends
 
 - **file** (default): JSON files stored at `{base_path}/{platform}/{account_id}.json`
