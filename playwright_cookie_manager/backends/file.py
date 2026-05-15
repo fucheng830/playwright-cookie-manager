@@ -1,7 +1,7 @@
 """JSON file backend."""
+from __future__ import annotations
 import json, os, shutil
 from datetime import datetime
-from typing import Optional
 from ..types import CookieAccount
 
 
@@ -21,7 +21,7 @@ class FileBackend:
             json.dump(account.model_dump(mode="json"), f, ensure_ascii=False, indent=2)
         shutil.move(tmp, self._path(account.platform, account.account_id))
 
-    def load(self, platform: str, account_id: str) -> Optional[CookieAccount]:
+    def load(self, platform: str, account_id: str) -> CookieAccount | None:
         p = self._path(platform, account_id)
         if not os.path.exists(p):
             return None
