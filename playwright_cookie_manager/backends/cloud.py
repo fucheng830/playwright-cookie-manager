@@ -1,7 +1,7 @@
 """Redis cloud backend for distributed cookie storage."""
+from __future__ import annotations
 import json, logging
 from datetime import datetime
-from typing import Optional
 from ..types import CookieAccount
 
 logger = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ class RedisBackend:
         client.set(key, data)
         logger.info(f"Cookie saved to Redis: {account.platform}/{account.account_id}")
 
-    def load(self, platform: str, account_id: str) -> Optional[CookieAccount]:
+    def load(self, platform: str, account_id: str) -> CookieAccount | None:
         client = self._get_client()
         key = self._key(platform, account_id)
         data = client.get(key)

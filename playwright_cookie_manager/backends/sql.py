@@ -1,7 +1,7 @@
 """SQLAlchemy backend for cookie storage."""
+from __future__ import annotations
 import json, logging
 from datetime import datetime
-from typing import Optional
 from ..types import CookieAccount
 
 logger = logging.getLogger(__name__)
@@ -48,7 +48,7 @@ class SQLBackend:
             conn.commit()
         logger.info(f"Cookie saved to DB: {account.platform}/{account.account_id}")
 
-    def load(self, platform: str, account_id: str) -> Optional[CookieAccount]:
+    def load(self, platform: str, account_id: str) -> CookieAccount | None:
         from sqlalchemy import text
         with self._get_conn() as conn:
             row = conn.execute(

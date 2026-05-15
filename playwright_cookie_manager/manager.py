@@ -1,7 +1,7 @@
 """CookieManager — main API."""
+from __future__ import annotations
 import json, logging, os
 from datetime import datetime
-from typing import Optional
 from .types import CookieData, CookieAccount
 from .backends.file import FileBackend
 
